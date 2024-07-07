@@ -8,7 +8,7 @@
 # i3 config file (v4)
 #
 # Please see https://i3wm.org/docs/userguide.html for a complete reference!
-set $super Mod4
+
 set $mod Mod1
 
 # Font for window titles. Will also be used by the bar unless a different font
@@ -28,7 +28,8 @@ exec --no-startup-id dex --autostart --environment i3
 
 # xss-lock grabs a logind suspend inhibit lock and will use i3lock to lock the
 # screen before suspend. Use loginctl lock-session to lock your screen.
-exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
+
+# exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
 
 # NetworkManager is the most popular way to manage wireless networks on Linux,
 # and nm-applet is a desktop environment-independent system tray GUI for it.
@@ -40,26 +41,27 @@ bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume @DEFAULT
 bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -10% && $refresh_i3status
 bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ toggle && $refresh_i3status
 bindsym XF86AudioMicMute exec --no-startup-id pactl set-source-mute @DEFAULT_SOURCE@ toggle && $refresh_i3status
+
 # Use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod
 
+# move tiling windows via drag & drop by left-clicking into the title bar,
+# or left-clicking anywhere into the window while holding the floating modifier.
+tiling_drag modifier titlebar
+
 # start a terminal
-bindsym $mod+Return exec kitty
+bindsym $mod+Return exec alacritty
 
 # kill focused window
 bindsym $mod+q kill
 
 # start dmenu (a program launcher)
 # bindsym $mod+d exec --no-startup-id dmenu_run
-
 # A more modern dmenu replacement is rofi:
 # bindcode $mod+40 exec "rofi -modi drun,run -show drun"
 # There also is i3-dmenu-desktop which only displays applications shipping a
 # .desktop file. It is a wrapper around dmenu, so you need that installed.
 bindsym $mod+d exec --no-startup-id i3-dmenu-desktop
-
-# Multi monitor setup
-exec --no-startup-id xrandr --output HDMI-1-0 --auto --right-of eDP-1
 
 # change focus
 bindsym $mod+h focus left
@@ -126,7 +128,9 @@ set $ws10 "10"
 set $ws11 "11 postman"
 
 # set workspaces to specific monitor
-workspace $ws3 output HDMI-1-0
+
+exec_always --no-startup-id xrandr --output HDMI-1-1 --auto --right-of eDP-1
+workspace $ws3 output HDMI-1-1
 workspace $ws1 output eDP-1
 
 # switch to workspace
@@ -189,10 +193,31 @@ mode "resize" {
 
 bindsym $mod+r mode "resize"
 
+# Touchpad controls
+# exec_always xinput set-prop "SYNA0001:00 06CB:CE78 Touchpad" "libinput Tapping Enabled" 1
+exec_always xinput set-prop "SYNA0001:00 06CB:CE78 Touchpad" "Synaptics Scrolling Distance" -32 -32
+
 # Start i3bar to display a workspace bar (plus the system information i3status
 # finds out, if available)
+
+# start picom compositor
+exec picom -b
+
+# A 3 px border
+default_border pixel 3
+#smart_borders on
+
+# gaps
+gaps inner 10px
+gaps outer 10px
+smart_gaps on
+
+exec_always feh --bg-fill /home/mrda/Pictures/Wallpapers/nature/Fantasy-Landscape.png
+
+# exec_always --no-startup-id $HOME/.config/polybar/launch.sh
+
 bar {
-    #height 25
+        #height 25
     position top
     font pango:DejaVu Sans Mono 12
     status_command i3status
@@ -213,22 +238,6 @@ bar {
     }
 }
 
-# start picom compositor
-exec picom -b
-
-# screen color temperature (night light)
-# exec_always sct 4500
-
-# Touchpad controls
-exec_always xinput set-prop "SYNA0001:00 06CB:CE78 Touchpad" "libinput Tapping Enabled" 1
-exec_always xinput set-prop "SYNA0001:00 06CB:CE78 Touchpad" "libinput Natural Scrolling Enabled" 1
-
-# Wallpaper
-exec_always feh --bg-center /home/mrda/Pictures/Wallpapers/neon/neon_room.png
-
-# interactive screenshot by pressing printscreen
-bindsym Print exec flameshot gui
-
 # class                 border  bground text    indicator child_border
 client.focused          #5390d9 #5390d9 #F8F8F2 #5390d9  #5390d9
 client.focused_inactive #44475A #44475A #F8F8F2 #44475A   #44475A
@@ -237,17 +246,11 @@ client.urgent           #44475A #dc00fe #F8F8F2 #dc00fe   #dc00fe
 client.placeholder      #282A36 #282A36 #F8F8F2 #282A36   #282A36
 client.background       #F8F8F2
 
-# A 3 px border
-default_border pixel 3
-#smart_borders on
+bindsym Print exec flameshot gui
 
-# gaps
-gaps inner 10px
-smart_gaps on
-
-# App -> workspace
 assign [class = "firefox"] $ws3
 assign [class = "Signal"] $ws9
-# assign [class = "Eclipse"] $ws1
 assign [class = "Postman"] $ws11
+assign [class = "discord"] $ws8
+assign [class = "thunderbird-default"] $ws10
 exec firefox
